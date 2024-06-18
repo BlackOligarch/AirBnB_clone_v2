@@ -81,3 +81,15 @@ class DBStorage:
     def drop_all(self):
         """Drops all tables in the database."""
         Base.metadata.drop_all(self.__engine)
+
+    def rollback(self):
+        """Rolls back the current database session."""
+        self.__session.rollback()
+
+    def close(self):
+        """Closes the current session."""
+        self.__session.remove()
+
+    def drop_all(self):
+        """Drops all tables in the database."""
+        Base.metadata.drop_all(self.__engine)
