@@ -65,3 +65,7 @@ class FileStorage:
         if obj is not None:
             obj_key = f"{obj.__class__.__name__}.{obj.id}"
             del self.__objects[obj_key]
+
+    def close(self):
+        """Closes the session & reloads the contents im the storage"""
+        self.reload()
