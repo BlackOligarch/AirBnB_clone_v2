@@ -29,7 +29,7 @@ def c_with_params(text):
 
     """
     text_no_underscore = text.replace('_', ' ')
-    return "c {}".format(text_no_underscore)
+    return "C {}".format(text_no_underscore)
 
 
 if __name__ == '__main__':
