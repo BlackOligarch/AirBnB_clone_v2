@@ -17,10 +17,11 @@ class State(BaseModel, Base):
 
     if getenv("HBNB_TYPE_STORAGE") == "db":
         cities = relationship(
-            "City", backref="state", cascade="all, delete, delete-orphan"
+            "City", back_populates="state",
+            cascade="all, delete, delete-orphan"
         )
 
-    elif getenv("HBNB_TYPE_STORAGE") == "file":
+    else:  # assume file storage if DB storage is not explicitly set
 
         @property
         def cities(self):
