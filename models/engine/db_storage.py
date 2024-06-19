@@ -5,12 +5,14 @@
 from os import getenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.engine.url import URL
 from models.base_model import Base
 from models.city import City
 from models.state import State
 from models.user import User
 from models.place import Place
 from models.review import Review
+from tools import LazyTools
 
 
 class DBStorage:
@@ -22,11 +24,15 @@ class DBStorage:
 
     def __init__(self):
         """Instantiates a new DBStorage object."""
+        db_url = {
+            "database": f"{getenv('HBNB_MYSQL_DB')}",
+            "drivername": "mysql+mysqldb",
+            "username": f"{getenv('HBNB_MYSQL_USER')}",
+            "password": f"{getenv('HBNB_MYSQL_PWD')}",
+            "host": f"{getenv('HBNB_MYSQL_HOST')}",
+        }
         self.__engine = create_engine(
-            "mysql+mysqldb://"
-            f"{getenv('HBNB_MYSQL_USER')}:{getenv('HBNB_MYSQL_PWD')}"
-            f"@{getenv('HBNB_MYSQL_HOST')}/{getenv('HBNB_MYSQL_DB')}",
-            pool_pre_ping=True,
+            URL(**db_url),
         )
 
         if getenv("HBNB_ENV") == "test":
@@ -63,24 +69,18 @@ class DBStorage:
     def reload(self):
         """Creates all tables in the database and the current
         database session."""
+        # set the default collation and character set
+        LazyTools.set_default_collation(
+            engine=self.__engine, db=getenv("HBNB_MYSQL_DB")
+        )
+
         Base.metadata.create_all(self.__engine)
+
         session_factory = sessionmaker(
             bind=self.__engine, expire_on_commit=False
         )
-        db_session = scoped_session(session_factory)
-        self.__session = db_session()
 
-    def rollback(self):
-        """Rolls back the current database session."""
-        self.__session.rollback()
-
-    def close(self):
-        """Closes the current session."""
-        self.__session.close()
-
-    def drop_all(self):
-        """Drops all tables in the database."""
-        Base.metadata.drop_all(self.__engine)
+        self.__session = scoped_session(session_factory)
 
     def rollback(self):
         """Rolls back the current database session."""
